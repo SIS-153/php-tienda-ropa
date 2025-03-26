@@ -1,0 +1,47 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: tienda_ropa_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: tienda_ropa
+      MYSQL_USER: tienda_user
+      MYSQL_PASSWORD: tienda_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  php:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: tienda_ropa_php
+    environment:
+      - DB_HOST=db
+      - DB_NAME=tienda_ropa
+      - DB_USER=tienda_user
+      - DB_PASS=tienda_password
+    ports:
+      - "8888:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+    command: >
+      bash -c "
+      echo 'Esperando a MySQL...';
+      while ! nc -z db 3306; do 
+        echo 'Reintentando conexión...'; 
+        sleep 2; 
+      done;
+      echo 'MySQL disponible';
+      apache2-foreground"
+
+volumes:
+  mysql_data:
