@@ -162,6 +162,19 @@ class StockRopaController {
         $stmt->execute([$categoria]);
         return $stmt->fetchAll();
     }
+
+    // New method to get a clothing item by its ID
+    public function obtenerPrendaPorId($id) {
+        $stmt = $this->db->prepare("SELECT * FROM stock_ropa WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
+    // New method to edit a clothing item
+    public function editarPrenda($id, $nombre, $categoria, $talla, $color, $precio, $stock) {
+        $stmt = $this->db->prepare("UPDATE stock_ropa SET nombre = ?, categoria = ?, talla = ?, color = ?, precio = ?, stock = ? WHERE id = ?");
+        return $stmt->execute([$nombre, $categoria, $talla, $color, $precio, $stock, $id]);
+    }
 }
 
 // Database setup function
